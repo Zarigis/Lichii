@@ -327,6 +327,9 @@ public:
     void PopAsyncFlushes();
     void PopAsyncBuffers();
 
+    /// Copies `amount` bytes between cached buffers on the host GPU. GPU-written ranges of the
+    /// source stay GPU-written at the destination and are queued for download like any GPU
+    /// write. Returns false when either side is unmapped or neither is cached.
     bool DMACopy(GPUVAddr src_address, GPUVAddr dest_address, u64 amount);
 
     bool DMAClear(GPUVAddr src_address, u64 amount, u32 value);
@@ -472,6 +475,8 @@ private:
 
     void UpdateComputeTextureBuffers();
 
+    /// Records a GPU write to the range: marks it GPU-modified, drops older pending downloads
+    /// over it and queues it for download at a fence. `needs_sync` stamps the buffer's write tick.
     void MarkWrittenBuffer(BufferId buffer_id, DAddr device_addr, u32 size, bool needs_sync = false);
 
     /// Counts a GPU write to the command list pages in the range (invalidating their copies) and,
